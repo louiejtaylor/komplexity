@@ -4,8 +4,11 @@ import (
 	"github.com/biogo/biogo/seq/linear"
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/io/seqio/fasta"
+	"github.com/biogo/biogo/seq"
 	"fmt"
 	"os"
+	"strings"
+//	"reflect"
 )
 
 //score by probability
@@ -29,8 +32,23 @@ func kCounter(k int, seq string) (counts map[string]int) {
         return counts
 }
 //mask a sequence given a list of positions [start, end, start, end...]
-func maskSeq(seq string, positions []int) (seqOut string) {
-	//TODO
+func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
+	firstpos := 0
+	lastpos := 0
+	//fmt.Println(positions)
+	for i := 0; i < len(positions)/2; i++ {
+	//	fmt.Println(i)
+	//	fmt.Println(seqOut)
+		lastpos = positions[i*2]
+	//	fmt.Println(lastpos)
+		seqOut = sequ.Slice().Slice(firstpos,lastpos)
+	//	fmt.Println(seqOut)
+		firstpos = lastpos
+		lastpos = positions[i*2+1]
+		seqOut = seqOut.Append(linear.NewSeq("",[]alphabet.Letter(strings.Repeat("N", lastpos - firstpos)),alphabet.DNA).Slice())
+        //        fmt.Println(seqOut)
+	}
+	seqOut = seqOut.Append(sequ.Slice().Slice(lastpos, sequ.Len()))
 	return seqOut
 }
 
@@ -89,12 +107,19 @@ func main() {
 				}
 				//TODO filtration
 			}
+			fmt.Println(s.Slice())
 			if filtering {
 				filterpos = append(filterpos, s.Len())
 			}
-			fmt.Println(imap)
-			fmt.Println(filtering)
-			fmt.Println(filterpos)
+			if len(filterpos) == 0 {
+				fmt.Println(s.Slice())
+			} else {
+				filtered := maskSeq(s, filterpos)
+				fmt.Println(filtered)
+			}
+			//fmt.Println(imap)
+			//fmt.Println(filtering)
+			//fmt.Println(filterpos)
 		}
 	}
 }
