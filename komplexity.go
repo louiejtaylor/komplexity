@@ -9,14 +9,14 @@ import (
 )
 
 //score by probability
-func probScorer(n, k, l int) (score int) {
+func probScorer(n, k, l int) (score float64) {
         //TODO
 	return score
 }
 
 //score by sequence length
-func lenScorer(n, k, l int) (score int) {
-	//TODO
+func lenScorer(n, k, l int) (score float64) {
+	score = float64(n)/float64(l-k)
         return score
 }
 
@@ -45,19 +45,39 @@ func main() {
 	//TODO allow choosing to filter or mask
 	in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
 	for {
-		z, er := in.Read()
-		if er != nil { //stop if reading error
-			fmt.Println(err)
+		s, er := in.Read()
+		if er != nil { //stop if EOF
+			//no need to keep printing nil
 			break
 		} else { //process sequence
 			//TODO variable window lengths
 			winlen := 100
-			for j := 0; j < z.Len() - winlen+1; j++ {
-				y := fmt.Sprintf("%v",z.Slice().Slice(j,j+winlen+1))
-
-				fmt.Println(y)
-				fmt.Println(kCounter(4,y))
+			k := 4
+			//TODO variable k
+			imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
+			//fmt.Println(imap)
+			//fmt.Println(len(fmt.Sprintf("%v",s.Slice().Slice(0,winlen))))
+			iscore := lenScorer(len(imap), k, winlen)
+			fmt.Println(iscore)
+			//TODO dynamic threshold
+			//threshold := 0.55
+			//filtering := false //toggle
+			for j := 0; j < s.Len() - winlen +1; j++ {
+				oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
+				newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
+				if imap[oldk] == 1 {
+					delete(imap, oldk)
+				} else {
+					imap[oldk]--
+				}
+				imap[newk]++
+				iscore = lenScorer(len(imap), k, winlen)
+				fmt.Println(oldk)
+				//TODO filtration
+				fmt.Println(newk)
+				fmt.Println(iscore)
 			}
+			fmt.Println(imap)
 		}
 	}
 }
