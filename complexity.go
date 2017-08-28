@@ -46,17 +46,19 @@ func main() {
 	in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
 	for {
 		z, er := in.Read()
-		if er != nil {
+		if er != nil { //stop if reading error
 			fmt.Println(err)
 			break
-		} else {
-			y := fmt.Sprintf("%v",z.Slice().Slice(1,10))
+		} else { //process sequence
+			//TODO variable window lengths
+			winlen := 100
+			for j := 0; j < z.Len() - winlen+1; j++ {
+				y := fmt.Sprintf("%v",z.Slice().Slice(j,j+winlen+1))
 
-			fmt.Println(y)
-			fmt.Println(kCounter(4,y))
+				fmt.Println(y)
+				fmt.Println(kCounter(4,y))
+			}
 		}
 	}
-
-
 }
 
