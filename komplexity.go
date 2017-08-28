@@ -46,22 +46,26 @@ func main() {
 	in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
 	for {
 		s, er := in.Read()
+
 		if er != nil { //stop if EOF
-			//no need to keep printing nil
 			break
+
 		} else { //process sequence
 			//TODO variable window lengths
 			winlen := 100
 			k := 4
 			//TODO variable k
 			imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
-			//fmt.Println(imap)
-			//fmt.Println(len(fmt.Sprintf("%v",s.Slice().Slice(0,winlen))))
 			iscore := lenScorer(len(imap), k, winlen)
 			fmt.Println(iscore)
 			//TODO dynamic threshold
-			//threshold := 0.55
-			//filtering := false //toggle
+			threshold := 0.55
+			filtering := false //toggle
+			var filterpos []int = make([]int,0,10)
+			if iscore < threshold {
+				filtering = true
+				filterpos = append(filterpos, 0)
+			}
 			for j := 0; j < s.Len() - winlen +1; j++ {
 				oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
 				newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
@@ -72,12 +76,25 @@ func main() {
 				}
 				imap[newk]++
 				iscore = lenScorer(len(imap), k, winlen)
-				fmt.Println(oldk)
+				if filtering {
+					if iscore > threshold {
+						filterpos = append(filterpos, j + winlen)
+						filtering = false
+					}
+				} else {
+					if iscore < threshold {
+						filterpos = append(filterpos, j)
+						filtering = true
+					}
+				}
 				//TODO filtration
-				fmt.Println(newk)
-				fmt.Println(iscore)
+			}
+			if filtering {
+				filterpos = append(filterpos, s.Len())
 			}
 			fmt.Println(imap)
+			fmt.Println(filtering)
+			fmt.Println(filterpos)
 		}
 	}
 }
