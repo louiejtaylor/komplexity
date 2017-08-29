@@ -33,21 +33,21 @@ func kCounter(k int, seq string) (counts map[string]int) {
         return counts
 }
 //mask a sequence given a list of positions [start, end, start, end...]
-func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
+func maskSeq(sequ seq.Sequence, positions []int) (seqOut seq.Sequence) {
 	firstpos := 0
 	lastpos := 0
-	seqOut = sequ.Slice().Slice(0,0)
+	seqOut = linear.NewSeq(sequ.Name(), []alphabet.Letter(""),alphabet.DNA)
 	//fmt.Println(positions)
 	for i := 0; i < len(positions)/2; i++ {
 	//	fmt.Println(i)
 	//	fmt.Println(seqOut)
 		lastpos = positions[i*2]
 	//	fmt.Println(lastpos)i
-		seqOut = seqOut.Append(sequ.Slice().Slice(firstpos,lastpos))
+		seqOut = seqOut.AppendLetters(sequ.Slice().Slice(firstpos,lastpos))
 	//	fmt.Println(seqOut)
 		firstpos = lastpos
 		lastpos = positions[i*2+1]
-		seqOut = seqOut.Append(linear.NewSeq("",[]alphabet.Letter(strings.Repeat("N", lastpos - firstpos)),alphabet.DNA).Slice())
+		seqOut = seqOut.AppendLetters(alphabet.Letter(strings.Repeat("N", lastpos - firstpos)))
         //        fmt.Println(seqOut)
 	}
 	seqOut = seqOut.Append(sequ.Slice().Slice(lastpos, sequ.Len()))
@@ -57,13 +57,13 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 
 func main() {
 	//TODO command line input
-	infile, err := os.Open("chr2_caps.fa")
+	infile, err := os.Open("test.fa")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	defer infile.Close()
-	outfile, er := os.Create("testout_thresh_.1.fa")
+	outfile, er := os.Create("testout_k2.fa")
 	if er != nil {
                 fmt.Println(err)
                 os.Exit(1)
@@ -87,7 +87,7 @@ func main() {
 			iscore := lenScorer(len(imap), k, winlen)
 			fmt.Println(iscore)
 			//TODO dynamic threshold
-			threshold := 0.1
+			threshold := 0.3
 			filtering := false //toggle
 			var filterpos []int = make([]int,0,10)
 			if iscore < threshold {
