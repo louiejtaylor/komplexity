@@ -34,23 +34,25 @@ func kCounter(k int, seq string) (counts map[string]int) {
 }
 //mask a sequence given a list of positions [start, end, start, end...]
 func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
-	firstpos := 0
-	lastpos := 0
+	beghq := 0
+	endhq := 0
 	seqOut = sequ.Slice().Slice(0,0)
-	//fmt.Println(positions)
+	fmt.Println(positions)
+	fmt.Println(sequ.Len())
+	fmt.Println(len(positions))
 	for i := 0; i < len(positions)/2; i++ {
-	//	fmt.Println(i)
 	//	fmt.Println(seqOut)
-		lastpos = positions[i*2]
-	//	fmt.Println(lastpos)i
-		seqOut = seqOut.Append(sequ.Slice().Slice(firstpos,lastpos))
+		endhq = positions[i*2]
+	//	fmt.Println(lastpos)
+		seqOut = seqOut.Append(sequ.Slice().Slice(beghq,endhq))
 	//	fmt.Println(seqOut)
-		firstpos = lastpos
-		lastpos = positions[i*2+1]
-		seqOut = seqOut.Append(linear.NewSeq("",[]alphabet.Letter(strings.Repeat("N", lastpos - firstpos)),alphabet.DNA).Slice())
-        //        fmt.Println(seqOut)
+		beghq = positions[i*2+1]
+		seqOut = seqOut.Append(linear.NewSeq("",[]alphabet.Letter(strings.Repeat("N", beghq - endhq)),alphabet.DNA).Slice())
+		fmt.Println(beghq, endhq)
 	}
-	seqOut = seqOut.Append(sequ.Slice().Slice(lastpos, sequ.Len()))
+	fmt.Println("bef", beghq, sequ.Len())
+	seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
+	fmt.Println("aft")
 	return seqOut
 }
 
@@ -63,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer infile.Close()
-	outfile, er := os.Create("testout_thresh_.1.fa")
+	outfile, er := os.Create("test_chr2_.3.fa")
 	if er != nil {
                 fmt.Println(err)
                 os.Exit(1)
@@ -87,7 +89,7 @@ func main() {
 			iscore := lenScorer(len(imap), k, winlen)
 			fmt.Println(iscore)
 			//TODO dynamic threshold
-			threshold := 0.1
+			threshold := 0.55
 			filtering := false //toggle
 			var filterpos []int = make([]int,0,10)
 			if iscore < threshold {
@@ -118,6 +120,9 @@ func main() {
 						filtering = true
 					}
 				}
+				//if math.Mod(float64(j),10.0) == 0 {
+				//	fmt.Println("%v %v", len(imap), iscore)
+				//}//fmt.Println(iscore)
 			}
 			if filtering {
 				filterpos = append(filterpos, s.Len())
@@ -126,10 +131,11 @@ func main() {
 				out.Write(s)
 			} else {
 				filtered := maskSeq(s, filterpos)
+				//fmt.Println(filtered)
 				out.Write(linear.NewSeq("",[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
 			}
 			//fmt.Println(imap)
-			//fmt.Println(filtering)
+			//fmt.Println(filtered)
 			//fmt.Println(filterpos)
 		}
 	}
