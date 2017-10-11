@@ -52,13 +52,15 @@ func main() {
 	flag.StringVar(&filein, "in", "test.fa", "Input filename")
 
 	//k := flag.Int("k", 4, "k-mer size")
-	k := 4
+	var k int
+	flag.IntVar(&k, "k", 4, "k-mer size")
 
 	//winlen := flag.Int("win", 100, "window length")
-	winlen := 100
+	var winlen int
+	flag.IntVar(&winlen,"win", 100, "window length")
+
 	var fileout string
 	flag.StringVar(&fileout, "out", filein+"_filtered", "Output filename")
-	//fileout := filein + "_filtered"
 
 	flag.Parse()
 
@@ -105,9 +107,11 @@ func main() {
 			}
 
 			for j := 0; j < s.Len() - winlen; j++ {
+
 				//grab first and last kmers
 				oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
 				newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
+
 				//get rid of old kmer
 				if imap[oldk] == 1 {
 					delete(imap, oldk)
@@ -142,7 +146,7 @@ func main() {
 				out.Write(s)
 			} else {
 				filtered := maskSeq(s, filterpos)
-				out.Write(linear.NewSeq("",[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				out.Write(linear.NewSeq("ab",[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
 			}
 		}
 	}
