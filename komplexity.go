@@ -35,6 +35,8 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 	beghq := 0
 	endhq := 0
 	seqOut = sequ.Slice().Slice(0,0)
+
+	//iteratively mask by replacing sequence with N
 	for i := 0; i < len(positions)/2; i++ {
 		endhq = positions[i*2]
 		seqOut = seqOut.Append(sequ.Slice().Slice(beghq,endhq))
@@ -91,6 +93,7 @@ func main() {
 
 		} else { //process sequence
 
+			//create map
 			imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
 			iscore := lenScorer(len(imap), k, winlen)
 

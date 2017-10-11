@@ -1,6 +1,6 @@
 # Komplexity
 
-A k-mer-based approach to masking low-complexity sequences.
+A k-mer-based approach for masking low-complexity sequences.
 
 ## Install
 
