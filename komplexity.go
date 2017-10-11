@@ -93,7 +93,6 @@ func main() {
 
 			imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
 			iscore := lenScorer(len(imap), k, winlen)
-			fmt.Println(iscore)
 
 			threshold := 0.55
 			filtering := false //toggle
