@@ -1,14 +1,14 @@
-#Komplexity
+# Komplexity
 
 A k-mer-based approach to masking low-complexity sequences.
 
-##Install
+## Install
 
     git clone https://github.com/louiejtaylor/komplexity
 
 or just [grab the binary](https://github.com/louiejtaylor/komplexity/blob/master/komplexity).
 
-##Usage
+## Usage
 
     ./komplexity -in [-out] [-k] [-win]
 
