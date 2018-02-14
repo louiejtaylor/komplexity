@@ -1,6 +1,6 @@
 # Komplexity
 
-A k-mer-based approach for masking low-complexity sequences.
+A k-mer-based approach for masking low-complexity sequences. See also the [currently faster] sister implemetation in Rust: https://github.com/eclarke/komplexity
 
 ## Install
 
