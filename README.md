@@ -17,3 +17,4 @@ or just [grab the binary](https://github.com/louiejtaylor/komplexity/blob/master
     -out="test.fa_filtered": Output filename 
     -win=100: window length
 
+Still under construction..for now works only on fasta
