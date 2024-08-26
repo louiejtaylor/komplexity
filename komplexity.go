@@ -9,10 +9,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-//	"math"
 	"flag"
-
-//	"reflect"
 )
 
 //score by sequence length
