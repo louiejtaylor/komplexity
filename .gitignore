@@ -9,7 +9,7 @@
 *.test
 *.fa
 *.fasta
-#*_filtered
+*_filtered
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
