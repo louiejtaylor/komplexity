@@ -48,13 +48,11 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 func main() {
 	//grab input from command line
 	var filein string
-	flag.StringVar(&filein, "in", "test.fa", "Input filename")
+	flag.StringVar(&filein, "in", "", "Input filename")
 
-	//k := flag.Int("k", 4, "k-mer size")
 	var k int
 	flag.IntVar(&k, "k", 4, "k-mer size")
 
-	//winlen := flag.Int("win", 100, "window length")
 	var winlen int
 	flag.IntVar(&winlen,"win", 100, "window length")
 
@@ -150,4 +148,3 @@ func main() {
 		}
 	}
 }
-
