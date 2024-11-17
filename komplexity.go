@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/biogo/biogo/seq/linear"
 	"github.com/biogo/biogo/alphabet"
-	"github.com/biogo/biogo/io/seqio"
+	"github.com/biogo/biogo/io/seqio/fasta"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
@@ -57,11 +57,16 @@ func main() {
 	flag.IntVar(&winlen,"win", 100, "window length")
 
 	var fileout string
-	flag.StringVar(&fileout, "out", filein+"_filtered", "Output filename")
+	flag.StringVar(&fileout, "out", "", "Output filename (default: appends '_filtered' to input fname")
+
 
 	flag.Parse()
 
 	//set up files
+	if fileout == "" {
+		fileout = filein+"_filtered"
+	}
+
 	infile, err := os.Open(filein)
 	if err != nil {
 		fmt.Println(err)
