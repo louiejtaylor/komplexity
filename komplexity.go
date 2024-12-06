@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/biogo/biogo/seq/linear"
 	"github.com/biogo/biogo/alphabet"
+	"github.com/biogo/biogo/io/seqio/"
 	"github.com/biogo/biogo/io/seqio/fasta"
+	"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
