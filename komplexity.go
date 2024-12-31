@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/biogo/biogo/seq/linear"
 	"github.com/biogo/biogo/alphabet"
-	"github.com/biogo/biogo/io/seqio/"
+	"github.com/biogo/biogo/io/seqio"
 	"github.com/biogo/biogo/io/seqio/fasta"
 	"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
@@ -84,6 +84,10 @@ func main() {
 
 	//setup reader and writer
 	in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
+	//in := seqio.NewScanner(
+	//	fasta.NewReader(infile,
+	//	infile, linear.NewSeq("", nil, alphabet.DNA)
+	//)
 	out := fasta.NewWriter(outfile, 60)
 
 	//read infile
