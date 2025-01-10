@@ -154,7 +154,7 @@ func main() {
 				out.Write(s)
 			} else {
 				filtered := maskSeq(s, filterpos)
-				out.Write(linear.NewSeq("ab",[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				out.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
 			}
 		}
 	}
