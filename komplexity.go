@@ -5,7 +5,7 @@ import (
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/io/seqio"
 	"github.com/biogo/biogo/io/seqio/fasta"
-	"github.com/biogo/biogo/io/seqio/fastq"
+	// "github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
@@ -83,16 +83,13 @@ func main() {
 	defer outfile.Close()
 
 	//setup reader and writer
-	in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
-	//in := seqio.NewScanner(
-	//	fasta.NewReader(infile,
-	//	infile, linear.NewSeq("", nil, alphabet.DNA)
-	//)
+	//in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
+	in := seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
 	out := fasta.NewWriter(outfile, 60)
 
 	//read infile
-	for {
-		s, er := in.Read()
+	for in.Next() {
+		s := in.Seq().(*linear.Seq)
 
 		if er != nil { //stop if EOF
 			break
