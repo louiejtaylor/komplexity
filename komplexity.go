@@ -5,7 +5,7 @@ import (
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/io/seqio"
 	"github.com/biogo/biogo/io/seqio/fasta"
-	// "github.com/biogo/biogo/io/seqio/fastq"
+	"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
@@ -49,8 +49,11 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 
 func main() {
 	//grab input from command line
-	var filein string
-	flag.StringVar(&filein, "in", "", "Input filename")
+	var fa string
+	flag.StringVar(&fa, "fa", "", "Input .fasta file")
+
+	var fq string
+	flag.StringVar(&fq, "fq", "", "Input .fastq file")
 
 	var k int
 	flag.IntVar(&k, "k", 4, "k-mer size")
@@ -61,8 +64,20 @@ func main() {
 	var fileout string
 	flag.StringVar(&fileout, "out", "", "Output filename (default: appends '_filtered' to input fname")
 
-
 	flag.Parse()
+
+	if fa == "" and fq == "" {
+		fmt.Println("Must provide either -fq or -fa file")
+		fmt.Println(flag.Usage())
+	} elif fa != "" and fq != "" {
+		fmt.Println("Must provide only one of -fq or -fa")
+		fmt.Println(flag.Usage())
+	} else {
+		if fa == "" {
+			fmt := "fa"
+			filein := 
+
+
 
 	//set up files
 	if fileout == "" {
