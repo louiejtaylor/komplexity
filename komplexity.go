@@ -5,7 +5,7 @@ import (
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/io/seqio"
 	"github.com/biogo/biogo/io/seqio/fasta"
-	"github.com/biogo/biogo/io/seqio/fastq"
+	//"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
@@ -66,18 +66,24 @@ func main() {
 
 	flag.Parse()
 
-	if fa == "" and fq == "" {
+	format := ""
+	filein := ""
+
+	if fa == "" && fq == "" {
 		fmt.Println("Must provide either -fq or -fa file")
-		fmt.Println(flag.Usage())
-	} elif fa != "" and fq != "" {
+		fmt.Println(flag.Usage)
+	} else if fa != "" && fq != "" {
 		fmt.Println("Must provide only one of -fq or -fa")
-		fmt.Println(flag.Usage())
+		fmt.Println(flag.Usage)
 	} else {
 		if fa == "" {
-			fmt := "fa"
-			filein := 
-
-
+			format = "fq"
+			filein = fq
+		} else {
+			format = "fa"
+			filein = fa
+		}
+	}
 
 	//set up files
 	if fileout == "" {
@@ -97,11 +103,20 @@ func main() {
         }
 	defer outfile.Close()
 
+	var in *seqio.Scanner
+	var out *fasta.Writer
 	//setup reader and writer
 	//in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
-	in := seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
-	out := fasta.NewWriter(outfile, 60)
+	if format == "fa" {
+		in = seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
+		out = fasta.NewWriter(outfile, 60)
+	} else {
+		in = seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
+		out = fasta.NewWriter(outfile, 60)
 
+		fmt.Println("fastq handling not yet implemented")
+		os.Exit(1)
+	}
 	//read infile
 	for in.Next() {
 		s := in.Seq().(*linear.Seq)
