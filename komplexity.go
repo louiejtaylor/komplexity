@@ -5,7 +5,7 @@ import (
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/io/seqio"
 	"github.com/biogo/biogo/io/seqio/fasta"
-	//"github.com/biogo/biogo/io/seqio/fastq"
+	"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
 
 	"fmt"
@@ -104,15 +104,16 @@ func main() {
 	defer outfile.Close()
 
 	var in *seqio.Scanner
-	var out *fasta.Writer
+	var outfa *fasta.Writer
+	var outfq *fastq.Writer
 	//setup reader and writer
 	//in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
 	if format == "fa" {
 		in = seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
-		out = fasta.NewWriter(outfile, 60)
+		outfa = fasta.NewWriter(outfile, 60)
 	} else {
-		in = seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
-		out = fasta.NewWriter(outfile, 60)
+		in = seqio.NewScanner(fastq.NewReader(infile, linear.NewQSeq("", nil, alphabet.DNA, alphabet.Sanger)))
+		outfq = fastq.NewWriter(outfile)
 
 		fmt.Println("fastq handling not yet implemented")
 		os.Exit(1)
@@ -178,10 +179,18 @@ func main() {
 			}
 
 			if len(filterpos) == 0 {
-				out.Write(s)
+				if format == "fa" {
+					outfa.Write(s)
+				} else {
+					outfq.Write(s)
+				}
 			} else {
 				filtered := maskSeq(s, filterpos)
-				out.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				if format == "fa" {
+					outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				} else {
+					outfq.Write(s)
+				}
 			}
 		}
 	}
