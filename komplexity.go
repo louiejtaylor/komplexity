@@ -120,77 +120,71 @@ func main() {
 	}
 	//read infile
 	for in.Next() {
-		s := in.Seq().(*linear.Seq)
+		s := in.Seq()
 
-		if er != nil { //stop if EOF
-			break
+		//create map
+		imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
+		iscore := lenScorer(len(imap), k, winlen)
 
-		} else { //process sequence
+		threshold := 0.55
+		filtering := false //toggle
 
-			//create map
-			imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
-			iscore := lenScorer(len(imap), k, winlen)
+		var filterpos []int = make([]int,0,10)
 
-			threshold := 0.55
-			filtering := false //toggle
+		//check if initial score below threshold
+		if iscore < threshold {
+			filtering = true
+			filterpos = append(filterpos, 0)
+		}
 
-			var filterpos []int = make([]int,0,10)
+		for j := 0; j < s.Len() - winlen; j++ {
 
-			//check if initial score below threshold
-			if iscore < threshold {
-				filtering = true
-				filterpos = append(filterpos, 0)
+			//grab first and last kmers
+			oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
+			newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
+
+			//get rid of old kmer
+			if imap[oldk] == 1 {
+				delete(imap, oldk)
+			} else {
+				imap[oldk]--
 			}
 
-			for j := 0; j < s.Len() - winlen; j++ {
+			//add new kmer
+			imap[newk]++
+			iscore = lenScorer(len(imap), k, winlen)
 
-				//grab first and last kmers
-				oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
-				newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
-
-				//get rid of old kmer
-				if imap[oldk] == 1 {
-					delete(imap, oldk)
-				} else {
-					imap[oldk]--
-				}
-
-				//add new kmer
-				imap[newk]++
-				iscore = lenScorer(len(imap), k, winlen)
-
-				//add "inflection point" if necessary
-				if filtering {
-					if iscore > threshold {
-						filterpos = append(filterpos, j + winlen)
-						filtering = false
-					}
-				} else {
-					if iscore < threshold {
-						filterpos = append(filterpos, j)
-						filtering = true
-					}
-				}
-			}
-
-			//after processing, add final position
+			//add "inflection point" if necessary
 			if filtering {
-				filterpos = append(filterpos, s.Len())
-			}
-
-			if len(filterpos) == 0 {
-				if format == "fa" {
-					outfa.Write(s)
-				} else {
-					outfq.Write(s)
+				if iscore > threshold {
+					filterpos = append(filterpos, j + winlen)
+					filtering = false
 				}
 			} else {
-				filtered := maskSeq(s, filterpos)
-				if format == "fa" {
-					outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
-				} else {
-					outfq.Write(s)
+				if iscore < threshold {
+					filterpos = append(filterpos, j)
+					filtering = true
 				}
+			}
+		}
+
+		//after processing, add final position
+		if filtering {
+			filterpos = append(filterpos, s.Len())
+		}
+		if len(filterpos) == 0 {
+			if format == "fa" {
+				outfa.Write(s)
+			} else {
+				outfq.Write(s)
+			}
+		} else {
+			filtered := maskSeq(s, filterpos)
+			if format == "fa" {
+				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+			} else {
+				fmt.Println("inprogress")
+				//outfq.Write(linear.NewQSeq(s.name(), []alphabet.QLetter))
 			}
 		}
 	}
