@@ -46,6 +46,22 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 	return seqOut
 }
 
+//mask a sequence with quality scores // this should probably be merged
+func maskQSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
+	beghq := 0
+	endhq := 0
+	seqOut = sequ.Slice().Slice(0,0)
+
+	//iteratively mask by replacing sequence with N
+	for i := 0; i < len(positions)/2; i++ {
+		endhq = positions[i*2]
+		seqOut = seqOut.Append(sequ.Slice().Slice(beghq,endhq))
+		beghq = positions[i*2+1]
+		seqOut = seqOut.Append(linear.NewQSeq("",[]alphabet.QLetter(strings.Repeat("N", beghq - endhq)),alphabet.DNA).Slice())
+	}
+	seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
+	return seqOut
+}
 
 func main() {
 	//grab input from command line
@@ -115,18 +131,19 @@ func main() {
 		in = seqio.NewScanner(fastq.NewReader(infile, linear.NewQSeq("", nil, alphabet.DNA, alphabet.Sanger)))
 		outfq = fastq.NewWriter(outfile)
 
-		fmt.Println("fastq handling not yet implemented")
-		os.Exit(1)
+		//fmt.Println("fastq handling not yet implemented")
+		//os.Exit(1)
 	}
 	//read infile
 	for in.Next() {
-		s := in.Seq()
-
+		s := in.Seq()//.(*linear.QSeq)//.(*linear.Seq) //does QSeq work here?
+		fmt.Println(s.Name())
+		fmt.Println(s.Slice().Slice(0,winlen))
 		//create map
 		imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
 		iscore := lenScorer(len(imap), k, winlen)
 
-		threshold := 0.55
+		threshold := 0.55 //make configurable
 		filtering := false //toggle
 
 		var filterpos []int = make([]int,0,10)
@@ -167,7 +184,7 @@ func main() {
 				}
 			}
 		}
-
+		// fmt.Println(filterpos)
 		//after processing, add final position
 		if filtering {
 			filterpos = append(filterpos, s.Len())
@@ -184,6 +201,7 @@ func main() {
 				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
 			} else {
 				fmt.Println("inprogress")
+				outfq.Write(s)
 				//outfq.Write(linear.NewQSeq(s.name(), []alphabet.QLetter))
 			}
 		}
