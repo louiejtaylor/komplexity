@@ -51,13 +51,15 @@ func maskQSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 	beghq := 0
 	endhq := 0
 	seqOut = sequ.Slice().Slice(0,0)
+	//var qlett *alphabet.QLetters
 
 	//iteratively mask by replacing sequence with N
 	for i := 0; i < len(positions)/2; i++ {
 		endhq = positions[i*2]
 		seqOut = seqOut.Append(sequ.Slice().Slice(beghq,endhq))
 		beghq = positions[i*2+1]
-		seqOut = seqOut.Append(linear.NewQSeq("",[]alphabet.QLetter(strings.Repeat("N", beghq - endhq)),alphabet.DNA).Slice())
+
+		//seqOut = seqOut.Append(linear.NewQSeq("",[]alphabet.QLetter(strings.Repeat("N", beghq - endhq)),alphabet.DNA,alphabet.Sanger).Slice())
 	}
 	seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
 	return seqOut
@@ -139,6 +141,7 @@ func main() {
 		s := in.Seq()//.(*linear.QSeq)//.(*linear.Seq) //does QSeq work here?
 		fmt.Println(s.Name())
 		fmt.Println(s.Slice().Slice(0,winlen))
+		// outfq.Write(s)
 		//create map
 		imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
 		iscore := lenScorer(len(imap), k, winlen)
@@ -196,11 +199,15 @@ func main() {
 				outfq.Write(s)
 			}
 		} else {
-			filtered := maskSeq(s, filterpos)
 			if format == "fa" {
-				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				fafiltered := maskSeq(s, filterpos)
+				fmt.Println(fafiltered)
+				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",fafiltered.Slice(0,fafiltered.Len()))),alphabet.DNA))
 			} else {
-				fmt.Println("inprogress")
+				fqfiltered := maskQSeq(s, filterpos)
+				fmt.Println("up")
+				fmt.Println(fqfiltered)
+				fmt.Println("down")
 				outfq.Write(s)
 				//outfq.Write(linear.NewQSeq(s.name(), []alphabet.QLetter))
 			}
