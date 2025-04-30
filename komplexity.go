@@ -192,6 +192,7 @@ func main() {
 		if filtering {
 			filterpos = append(filterpos, s.Len())
 		}
+		fmt.Println(filterpos)
 		if len(filterpos) == 0 {
 			if format == "fa" {
 				outfa.Write(s)
