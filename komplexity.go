@@ -7,7 +7,6 @@ import (
 	"github.com/biogo/biogo/io/seqio/fasta"
 	"github.com/biogo/biogo/io/seqio/fastq"
 	"github.com/biogo/biogo/seq"
-
 	"fmt"
 	"os"
 	"strings"
@@ -27,6 +26,17 @@ func kCounter(k int, seq string) (counts map[string]int) {
 		counts[seq[i:i+k]]++
 	}
         return counts
+}
+
+func kQCounter(k int, seq string) (counts map[string]int) {
+	counts = make(map[string]int)
+	fmt.Println(len(seq))
+	for i := 0; i < len(seq)-k; i++ {
+		fmt.Println(seq[i:i+k])
+		counts[seq[i:i+k]]++
+	}
+	fmt.Println(counts)
+	return counts
 }
 
 //mask a sequence given a list of positions [start, end, start, end...]
@@ -141,9 +151,29 @@ func main() {
 		s := in.Seq()//.(*linear.QSeq)//.(*linear.Seq) //does QSeq work here?
 		fmt.Println(s.Name())
 		fmt.Println(s.Slice().Slice(0,winlen))
+		//fmt.Printf("%T\n", s)
+		//fmt.Printf("%T\n", in)
+		//fmt.Printf("%-s\n", s)
+		//fmt.Printf("%-s\n", in)
+		qq := fmt.Sprint(s.Slice())
+		fmt.Println(qq[1:len(qq)-1])
 		// outfq.Write(s)
 		//create map
-		imap := kCounter(k,fmt.Sprintf("%v",s.Slice().Slice(0,winlen)))
+		// var i_slice string
+		var imap map[string]int
+		if format == "fa" {
+			a_slice := s.Slice().Slice(0,winlen)
+			fmt.Printf("%T\n", a_slice)
+			imap = kCounter(k,fmt.Sprintf("%v",a_slice))
+		} else {
+			b_slice := s.Slice().Slice(0,winlen)
+			fmt.Printf("%T\n", b_slice)
+			fmt.Printf("%-s\n", b_slice)
+			fmt.Println(strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
+			imap = kCounter(k,strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
+		}
+
+
 		iscore := lenScorer(len(imap), k, winlen)
 
 		threshold := 0.55 //make configurable
