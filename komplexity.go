@@ -57,21 +57,29 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 }
 
 //mask a sequence with quality scores // this should probably be merged
-func maskQSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
+func maskQSeq(seqi string, sequ seq.Sequence, positions []int) (seqOut *linear.QSeq) {
 	beghq := 0
 	endhq := 0
-	seqOut = sequ.Slice().Slice(0,0)
+	seqRaw := "" //sequ.Slice().Slice(0,0)
+
 	//var qlett *alphabet.QLetters
 
 	//iteratively mask by replacing sequence with N
 	for i := 0; i < len(positions)/2; i++ {
 		endhq = positions[i*2]
-		seqOut = seqOut.Append(sequ.Slice().Slice(beghq,endhq))
+		seqRaw += seqi[beghq:endhq]
 		beghq = positions[i*2+1]
-
+		seqRaw += strings.Repeat("N", beghq - endhq)
 		//seqOut = seqOut.Append(linear.NewQSeq("",[]alphabet.QLetter(strings.Repeat("N", beghq - endhq)),alphabet.DNA,alphabet.Sanger).Slice())
 	}
-	seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
+	seqRaw += seqi[beghq:len(seqi)]
+	//fmt.Println(s.Slice().(alphabet.QLetters)))
+	//seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
+	seqOut = linear.NewQSeq(sequ.Name(), nil, alphabet.DNA, alphabet.Sanger)
+	seqRawLetters := []alphabet.Letter(seqRaw)
+	for j := range len(seqi) {
+		seqOut.AppendQLetters(alphabet.QLetter{L: seqRawLetters[j], Q: 0})
+	}
 	return seqOut
 }
 
@@ -161,6 +169,7 @@ func main() {
 		//create map
 		// var i_slice string
 		var imap map[string]int
+		fqs := ""
 		if format == "fa" {
 			a_slice := s.Slice().Slice(0,winlen)
 			fmt.Printf("%T\n", a_slice)
@@ -170,6 +179,8 @@ func main() {
 			fmt.Printf("%T\n", b_slice)
 			fmt.Printf("%-s\n", b_slice)
 			fmt.Println(strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
+			fqs = strings.Replace(fmt.Sprint(s.Slice().Slice(0,s.Len()))[1:(s.Len()*2)], " ", "", -1)
+			fmt.Println(fqs)
 			imap = kCounter(k,strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
 		}
 
@@ -189,10 +200,16 @@ func main() {
 
 		for j := 0; j < s.Len() - winlen; j++ {
 
+			var oldk string
+			var newk string
 			//grab first and last kmers
-			oldk := fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
-			newk := fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
-
+			if format == "fa" {
+				oldk = fmt.Sprintf("%v",s.Slice().Slice(j,j+k))
+				newk = fmt.Sprintf("%v",s.Slice().Slice(j+winlen-k,j+winlen))
+			} else {
+				oldk = fqs[j:j+k]
+				newk = fqs[j+winlen-k:j+winlen]
+			}
 			//get rid of old kmer
 			if imap[oldk] == 1 {
 				delete(imap, oldk)
@@ -232,14 +249,14 @@ func main() {
 		} else {
 			if format == "fa" {
 				fafiltered := maskSeq(s, filterpos)
-				fmt.Println(fafiltered)
+				//fmt.Println(fafiltered)
 				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",fafiltered.Slice(0,fafiltered.Len()))),alphabet.DNA))
 			} else {
-				fqfiltered := maskQSeq(s, filterpos)
+				fqfiltered := maskQSeq(fqs, s, filterpos)
 				fmt.Println("up")
 				fmt.Println(fqfiltered)
 				fmt.Println("down")
-				outfq.Write(s)
+				outfq.Write(fqfiltered)
 				//outfq.Write(linear.NewQSeq(s.name(), []alphabet.QLetter))
 			}
 		}
