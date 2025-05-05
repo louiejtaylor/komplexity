@@ -28,17 +28,6 @@ func kCounter(k int, seq string) (counts map[string]int) {
         return counts
 }
 
-func kQCounter(k int, seq string) (counts map[string]int) {
-	counts = make(map[string]int)
-	fmt.Println(len(seq))
-	for i := 0; i < len(seq)-k; i++ {
-		fmt.Println(seq[i:i+k])
-		counts[seq[i:i+k]]++
-	}
-	fmt.Println(counts)
-	return counts
-}
-
 //mask a sequence given a list of positions [start, end, start, end...]
 func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 	beghq := 0
@@ -60,9 +49,7 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 func maskQSeq(seqi string, sequ seq.Sequence, positions []int) (seqOut *linear.QSeq) {
 	beghq := 0
 	endhq := 0
-	seqRaw := "" //sequ.Slice().Slice(0,0)
-
-	//var qlett *alphabet.QLetters
+	seqRaw := ""
 
 	//iteratively mask by replacing sequence with N
 	for i := 0; i < len(positions)/2; i++ {
@@ -70,13 +57,12 @@ func maskQSeq(seqi string, sequ seq.Sequence, positions []int) (seqOut *linear.Q
 		seqRaw += seqi[beghq:endhq]
 		beghq = positions[i*2+1]
 		seqRaw += strings.Repeat("N", beghq - endhq)
-		//seqOut = seqOut.Append(linear.NewQSeq("",[]alphabet.QLetter(strings.Repeat("N", beghq - endhq)),alphabet.DNA,alphabet.Sanger).Slice())
 	}
+
 	seqRaw += seqi[beghq:len(seqi)]
-	//fmt.Println(s.Slice().(alphabet.QLetters)))
-	//seqOut = seqOut.Append(sequ.Slice().Slice(beghq, sequ.Len()))
 	seqOut = linear.NewQSeq(sequ.Name(), nil, alphabet.DNA, alphabet.Sanger)
 	seqRawLetters := []alphabet.Letter(seqRaw)
+
 	for j := range len(seqi) {
 		seqOut.AppendQLetters(alphabet.QLetter{L: seqRawLetters[j], Q: 0})
 	}
@@ -139,11 +125,11 @@ func main() {
         }
 	defer outfile.Close()
 
+	//setup reader and writer
 	var in *seqio.Scanner
 	var outfa *fasta.Writer
 	var outfq *fastq.Writer
-	//setup reader and writer
-	//in := fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA))
+
 	if format == "fa" {
 		in = seqio.NewScanner(fasta.NewReader(infile, linear.NewSeq("", nil, alphabet.DNA)))
 		outfa = fasta.NewWriter(outfile, 60)
@@ -151,36 +137,21 @@ func main() {
 		in = seqio.NewScanner(fastq.NewReader(infile, linear.NewQSeq("", nil, alphabet.DNA, alphabet.Sanger)))
 		outfq = fastq.NewWriter(outfile)
 
-		//fmt.Println("fastq handling not yet implemented")
-		//os.Exit(1)
 	}
 	//read infile
 	for in.Next() {
-		s := in.Seq()//.(*linear.QSeq)//.(*linear.Seq) //does QSeq work here?
-		fmt.Println(s.Name())
-		fmt.Println(s.Slice().Slice(0,winlen))
-		//fmt.Printf("%T\n", s)
-		//fmt.Printf("%T\n", in)
-		//fmt.Printf("%-s\n", s)
-		//fmt.Printf("%-s\n", in)
-		qq := fmt.Sprint(s.Slice())
-		fmt.Println(qq[1:len(qq)-1])
-		// outfq.Write(s)
+		s := in.Seq()
+
 		//create map
-		// var i_slice string
 		var imap map[string]int
+
 		fqs := ""
 		if format == "fa" {
 			a_slice := s.Slice().Slice(0,winlen)
-			fmt.Printf("%T\n", a_slice)
 			imap = kCounter(k,fmt.Sprintf("%v",a_slice))
 		} else {
 			b_slice := s.Slice().Slice(0,winlen)
-			fmt.Printf("%T\n", b_slice)
-			fmt.Printf("%-s\n", b_slice)
-			fmt.Println(strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
 			fqs = strings.Replace(fmt.Sprint(s.Slice().Slice(0,s.Len()))[1:(s.Len()*2)], " ", "", -1)
-			fmt.Println(fqs)
 			imap = kCounter(k,strings.Replace(fmt.Sprint(b_slice)[1:(winlen*2)], " ", "", -1))
 		}
 
@@ -234,13 +205,13 @@ func main() {
 				}
 			}
 		}
-		// fmt.Println(filterpos)
+
 		//after processing, add final position
 		if filtering {
 			filterpos = append(filterpos, s.Len())
 		}
-		fmt.Println(filterpos)
-		if len(filterpos) == 0 {
+
+		if len(filterpos) == 0 { // write sequence unchanged if it was not filtered
 			if format == "fa" {
 				outfa.Write(s)
 			} else {
@@ -249,15 +220,10 @@ func main() {
 		} else {
 			if format == "fa" {
 				fafiltered := maskSeq(s, filterpos)
-				//fmt.Println(fafiltered)
 				outfa.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",fafiltered.Slice(0,fafiltered.Len()))),alphabet.DNA))
 			} else {
 				fqfiltered := maskQSeq(fqs, s, filterpos)
-				fmt.Println("up")
-				fmt.Println(fqfiltered)
-				fmt.Println("down")
 				outfq.Write(fqfiltered)
-				//outfq.Write(linear.NewQSeq(s.name(), []alphabet.QLetter))
 			}
 		}
 	}
