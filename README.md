@@ -19,4 +19,4 @@ or just [grab the binary](https://github.com/louiejtaylor/komplexity/blob/master
     -win=100: window length
 
 ## Known issues
- - Quality scores not preserved when maskinf [#5](https://github.com/louiejtaylor/komplexity/issues/5)
+ - Quality scores not preserved when masking [#5](https://github.com/louiejtaylor/komplexity/issues/5)
