@@ -1,6 +1,6 @@
 # Komplexity
 
-A k-mer-based approach for masking low-complexity sequences. See also the [currently faster] sister implemetation in Rust: https://github.com/eclarke/komplexity
+A k-mer-based approach for masking low-complexity sequences. See also the sister implemetation in Rust: https://github.com/eclarke/komplexity
 
 ## Install
 
@@ -10,11 +10,13 @@ or just [grab the binary](https://github.com/louiejtaylor/komplexity/blob/master
 
 ## Usage
 
-    ./komplexity -in [-out] [-k] [-win] [-h]
+    ./komplexity [-fa] [-fq] [-out] [-k] [-win] [-h]
 
-    -in="test.fa": Input filename
+    -fa: Input filename (.fasta format)
+    -fq: Input filename (.fastq format)
     -k=4: k-mer size
-    -out="test.fa_filtered": Output filename 
+    -out: Output filename (default: appends "_masked" to the input filename) 
     -win=100: window length
 
-Still under construction..for now works only on fasta
+## Known issues
+ - Quality scores not preserved when maskinf [#5](https://github.com/louiejtaylor/komplexity/issues/5)

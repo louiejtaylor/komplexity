@@ -109,7 +109,7 @@ func main() {
 
 	//set up files
 	if fileout == "" {
-		fileout = filein+"_filtered"
+		fileout = filein+"_masked"
 	}
 
 	infile, err := os.Open(filein)
