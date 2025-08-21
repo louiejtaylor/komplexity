@@ -48,22 +48,25 @@ func maskSeq(sequ seq.Sequence, positions []int) (seqOut alphabet.Slice) {
 func main() {
 	//grab input from command line
 	var filein string
-	flag.StringVar(&filein, "in", "test.fa", "Input filename")
+	flag.StringVar(&filein, "in", "", "Input filename")
 
-	//k := flag.Int("k", 4, "k-mer size")
 	var k int
 	flag.IntVar(&k, "k", 4, "k-mer size")
 
-	//winlen := flag.Int("win", 100, "window length")
 	var winlen int
 	flag.IntVar(&winlen,"win", 100, "window length")
 
 	var fileout string
-	flag.StringVar(&fileout, "out", filein+"_filtered", "Output filename")
+	flag.StringVar(&fileout, "out", "", "Output filename (default: appends '_filtered' to input fname")
+
 
 	flag.Parse()
 
 	//set up files
+	if fileout == "" {
+		fileout = filein+"_filtered"
+	}
+
 	infile, err := os.Open(filein)
 	if err != nil {
 		fmt.Println(err)
@@ -145,9 +148,8 @@ func main() {
 				out.Write(s)
 			} else {
 				filtered := maskSeq(s, filterpos)
-				out.Write(linear.NewSeq("ab",[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
+				out.Write(linear.NewSeq(s.Name(),[]alphabet.Letter(fmt.Sprintf("%v",filtered.Slice(0,filtered.Len()))),alphabet.DNA))
 			}
 		}
 	}
 }
-
